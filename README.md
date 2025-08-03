@@ -1,3 +1,4 @@
+<!--
 # 2025 baby varnet
 2025 SNU FastMRI challenge
 
@@ -67,7 +68,7 @@
 * ```reconstruct.py```
    * ```train.py```으로 학습한 ```best_model.pt```을 활용해 leader_board dataset을 reconstruction하고 그 결과를 result 폴더에 저장합니다.
    * Inference Time이 대회 GPU 기준으로 3600초를 초과할 경우 Total SSIM을 기록할 수 없습니다. 실제 Evaluation 때 조교가 확인할 예정이며, inference time은 과도하게 모델이 크지 않는다면 걱정하실 필요 없습니다.
-      * 3600초는 reconstruction process의 total time입니다. leaderboard_data --> (optional) preprocessed_data --> reconstruction하는 모든 과정이 포함되며, 여러 개의 모델을 사용하셔서 Inference를 진행하시는 경우에도 한 개의 모델이 아닌 전체 모델에 관하여 3600초를 초과해서는 안 됩니다.
+      * 3600초는 reconstruction process의 total time입니다. leaderboard_data -> (optional) preprocessed_data -> reconstruction하는 모든 과정이 포함되며, 여러 개의 모델을 사용하셔서 Inference를 진행하시는 경우에도 한 개의 모델이 아닌 전체 모델에 관하여 3600초를 초과해서는 안 됩니다.
 * ```leaderboard_eval.py```
    * ```reconstruct.py```을 활용해 생성한 reconstruction의 SSIM을 측정합니다.
    * SSIM (acc4): acc4 데이터에 대한 reconstruction의 SSIM을 측정합니다.
@@ -107,3 +108,12 @@ python leaderboard_eval.py // sh leaderboard_eval.sh
 - loss 그래프 혹은 기록
 - 모델 weight file
 - 모델 설명 ppt
+-->
+
+## dev settings
+```
+uv venv --python 3.8.5
+.venv\Scripts\activate
+uv pip install -r requirements.txt
+
+```

@@ -10,6 +10,7 @@ from collections import defaultdict
 from utils.data.load_data import create_data_loaders
 from utils.common.utils import save_reconstructions, ssim_loss
 from utils.common.loss_function import SSIMLoss
+from utils.model.mraugment.data_augment import DataAugmentor
 from utils.model.varnet import VarNet
 
 import os
@@ -108,9 +109,16 @@ def train(args):
     best_val_loss = 1.
     start_epoch = 0
 
+    # data augmentation
+    # -----------------
+    # initialize data augmentation pipeline
+    current_epoch = start_epoch
+    current_epoch_func = lambda: current_epoch
+    augmentor = DataAugmentor(args, current_epoch_func)
+    # ------------------
     
-    train_loader = create_data_loaders(data_path = args.data_path_train, args = args, shuffle=True)
-    val_loader = create_data_loaders(data_path = args.data_path_val, args = args)
+    train_loader = create_data_loaders(data_path = args.data_path_train, args = args, shuffle=True, data_augmentor=augmentor)
+    val_loader = create_data_loaders(data_path = args.data_path_val, args = args, data_augmentor=None)
     
     val_loss_log = np.empty((0, 2))
     for epoch in range(start_epoch, args.num_epochs):

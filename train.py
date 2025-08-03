@@ -32,6 +32,7 @@ def parse():
     parser.add_argument('--target-key', type=str, default='image_label', help='Name of target key')
     parser.add_argument('--max-key', type=str, default='max', help='Name of max key in attributes')
     parser.add_argument('--seed', type=int, default=430, help='Fix random seed')
+    parser.add_argument('--dataset_type', type=str, default='brain', help='type of dataset to train MoE, brain or knee')
 
     args = parser.parse_args()
     return args
