@@ -18,9 +18,10 @@ class SliceData(Dataset):
         self.forward = forward
         self.image_examples = []
         self.kspace_examples = []
-        
-        dataset_type = args.dataset_type.lower()  # "knee" or "brain"
-        assert args.dataset_type.lower() in {"knee", "brain"}, "dataset_type must be 'knee' or 'brain'"
+
+        if not forward:
+            dataset_type = args.dataset_type.lower()  # "knee" or "brain"
+            assert args.dataset_type.lower() in {"knee", "brain"}, "dataset_type must be 'knee' or 'brain'"
         
         if not forward:
             all_image_files = list(Path(root / "image").iterdir())
@@ -33,15 +34,24 @@ class SliceData(Dataset):
                     (fname, slice_ind) for slice_ind in range(num_slices)
                 ]
 
-        all_kspace_files = list(Path(root / "kspace").iterdir())
-        kspace_files = [
-            f for f in all_kspace_files if dataset_type in f.name.lower()
-        ]
-        for fname in sorted(kspace_files):
-            num_slices = self._get_metadata(fname)
-            self.kspace_examples += [
-                (fname, slice_ind) for slice_ind in range(num_slices)
+        if not forward:
+            all_kspace_files = list(Path(root / "kspace").iterdir())
+            kspace_files = [
+                f for f in all_kspace_files if dataset_type in f.name.lower()
             ]
+            for fname in sorted(kspace_files):
+                num_slices = self._get_metadata(fname)
+                self.kspace_examples += [
+                    (fname, slice_ind) for slice_ind in range(num_slices)
+                ]
+        else:
+            kspace_files = list(Path(root / "kspace").iterdir())
+            for fname in sorted(kspace_files):
+                num_slices = self._get_metadata(fname)
+    
+                self.kspace_examples += [
+                    (fname, slice_ind) for slice_ind in range(num_slices)
+                ]
 
 
     def _get_metadata(self, fname):
@@ -72,21 +82,26 @@ class SliceData(Dataset):
             with h5py.File(image_fname, "r") as hf:
                 target = hf[self.target_key][dataslice]
                 attrs = dict(hf.attrs)
-            
-        return self.transform(input, mask, target, attrs, kspace_fname.name, dataslice)
+
+        if not self.forward:
+            return self.transform(input, mask, target, attrs, kspace_fname.name, dataslice)
+        else:
+            return self.transform(mask, input, target, attrs, kspace_fname.name, dataslice)
 
 
 def create_data_loaders(data_path, args, shuffle=False, isforward=False, data_augmentor=None):
-    mask = create_mask_for_mask_type(
-        args.mask_type, args.center_fractions, args.accelerations
-    )
     if not isforward:
+        mask = create_mask_for_mask_type(
+            args.mask_type, args.center_fractions, args.accelerations
+        )
         if data_augmentor != None:
             transform = VarNetDataTransform(augmentor=data_augmentor, mask_func=mask, use_seed=False)
         else:
             transform = VarNetDataTransform(mask_func=mask)
     else:
-        transform = VarNetDataTransform()
+        max_key_ = -1
+        target_key_ = -1
+        transform = DataTransform(isforward, max_key_)
     if not isforward:
         max_key_ = args.max_key
         target_key_ = args.target_key
